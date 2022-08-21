@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <RootNamespace>BTD6ModdedSaveHelper</RootNamespace>
+        <Configurations>Debug;Release</Configurations>
+        <Nullable>warnings</Nullable>
+        <AssemblyName>BTD6ModdedSaveHelper</AssemblyName>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <Optimize>false</Optimize>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <Optimize>true</Optimize>
+        <DebugType>none</DebugType>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Remove="RoundCorners.cs"/>
+    </ItemGroup>
+    <Import Project="C:\Users\graham.GRAHAMS-PC\source\repos\btd6.targets"/>
+</Project>
