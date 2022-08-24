@@ -2,11 +2,11 @@ ame: Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
     tags:
       - '*'
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 env:
   PROJECT_NAME: BTD6SaveMenu
