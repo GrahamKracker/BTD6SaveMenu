@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTD6ModdedSaveHelper", "BTD6ModdedSaveHelper.csproj", "{EB9E7753-A4D2-47E8-8024-8EF042558A88}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BTD6SaveMenu", "BTD6SaveMenu.csproj", "{EB9E7753-A4D2-47E8-8024-8EF042558A88}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

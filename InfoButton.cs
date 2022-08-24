@@ -1,114 +1,42 @@
-﻿namespace BTD6ModdedSaveHelper;
+﻿namespace BTD6SaveMenu;
 
 using BTD_Mod_Helper.Extensions;
 
-public static class InfoButtons
+public static class InfoButton
 {
     public static ModHelperButton selectedbutton;
 
-    public static ModHelperButton CreateTowersButton(MapSaveDataModel save)
+    public static ModHelperButton CreateButton(MapSaveDataModel save, string name,Action onclick=null,string sprite=null,bool towers=false, bool hero=false, bool history=false, bool misc=false)
     {
-        ModHelperButton towersbutton;
-        var description = SaveMenu.GetDescription(save);
-        if (description.Equals("Error"))
-        {
-            towersbutton = ModHelperButton.Create(new Info("TowersButton", width: 562, height: 200), VanillaSprites.MainBGPanelGrey, null);
-            towersbutton.AddText(new Info("Text", 0, 0, 500, 100), "Towers", 60f);
-            return towersbutton;
-        }
-
-        towersbutton = null;
-        towersbutton = ModHelperButton.Create(new Info("TowersButton", width: 562, height: 200), VanillaSprites.BlueBtnLong, new Action(() =>
-        {
-            selectedbutton.Image.SetSprite(VanillaSprites.BlueBtnLong);
-            towersbutton.Image.SetSprite(VanillaSprites.GreenBtnLong);
-            SaveMenu.selectedSaveDescription.SetText(description);
-            selectedbutton = towersbutton;
-            SaveMenu.previewimage.SetActive(false);
-        }));
-        towersbutton.AddText(new Info("Text", 0, 0, 500, 100), "Towers", 60f);
-        return towersbutton;
-    }
-
-    public static ModHelperButton CreateHeroesButton(MapSaveDataModel save)
-    {
-        ModHelperButton heroesbutton = null;
-        var description = SaveMenu.GetDescription(save, true);
-        if (description.Equals("Error"))
-        {
-            heroesbutton = ModHelperButton.Create(new Info("HeroesButton", width: 562, height: 200), VanillaSprites.MainBGPanelGrey, null);
-            heroesbutton.AddText(new Info("Text", 0, 0, 500, 100), "Heroes", 60f);
-            return heroesbutton;
-        }
-
-        heroesbutton = ModHelperButton.Create(new Info("HeroesButton", width: 562, height: 200), VanillaSprites.BlueBtnLong, new Action(() =>
-        {
-            selectedbutton.Image.SetSprite(VanillaSprites.BlueBtnLong);
-            heroesbutton.Image.SetSprite(VanillaSprites.GreenBtnLong);
-            SaveMenu.selectedSaveDescription.SetText(description);
-            selectedbutton = heroesbutton;
-            SaveMenu.previewimage.SetActive(false);
-        }));
-        heroesbutton.AddText(new Info("Text", 0, 0, 500, 100), "Heroes", 60f);
-        return heroesbutton;
-    }
-
-
-    public static ModHelperButton CreateHistoryButton(MapSaveDataModel save)
-    {
-        ModHelperButton historybutton = null;
-        var description = SaveMenu.GetDescription(save, false, true);
-        if (description.Equals("Error"))
-        {
-            historybutton = ModHelperButton.Create(new Info("HistoryButton", width: 562, height: 200), VanillaSprites.MainBGPanelGrey, null);
-            historybutton.AddText(new Info("Text", 0, 0, 500, 100), "Sold", 60f);
-            return historybutton;
-        }
-
-        historybutton = ModHelperButton.Create(new Info("HistoryButton", width: 562, height: 200), VanillaSprites.BlueBtnLong, new Action(() =>
-        {
-            selectedbutton.Image.SetSprite(VanillaSprites.BlueBtnLong);
-            historybutton.Image.SetSprite(VanillaSprites.GreenBtnLong);
-            SaveMenu.selectedSaveDescription.SetText(description);
-            selectedbutton = historybutton;
-            SaveMenu.previewimage.SetActive(false);
-        }));
-        historybutton.AddText(new Info("Text", 0, 0, 500, 100), "Sold", 60f);
-        return historybutton;
-    }
-
-    public static ModHelperButton CreatePreviewButton(MapSaveDataModel save)
-    {
-        ModHelperButton previewbutton = null;
-        if (true)
-        {
-            previewbutton = ModHelperButton.Create(new Info("HistoryButton", width: 562, height: 200), VanillaSprites.MainBGPanelGrey, null);
-            previewbutton.AddText(new Info("Text", 0, 0, 500, 100), "Preview", 60f);
-            return previewbutton;
-        }
-
-        previewbutton = ModHelperButton.Create(new Info("PreviewButton", width: 562, height: 200), VanillaSprites.BlueBtnLong, new Action(() =>
-        {
-            selectedbutton.Image.SetSprite(VanillaSprites.BlueBtnLong);
-            previewbutton.Image.SetSprite(VanillaSprites.GreenBtnLong);
-            selectedbutton = previewbutton;
-            SaveMenu.previewimage.SetActive(false);
-        }));
-        previewbutton.AddText(new Info("Text", 0, 0, 500, 100), "Sold", 60f);
-        return previewbutton;
-    }
-
-    public static ModHelperImage CreatePreviewImage(MapSaveDataModel save)
-    {
-        foreach (var mapSetMap in GameData.Instance.mapSet.maps)
-        {
-            if (save.savedMapsId == mapSetMap.id)
+        ModHelperButton button;      
+        var description = SaveMenu.GetDescription(save, towers,hero, history, misc);     
+        button = null;
+        if (onclick == null)
             {
-                var image = ModHelperImage.Create(new Info("Image", width: 562, height: 200), mapSetMap.mapSprite.guidRef);
-                return image;
+                
+                onclick = () =>
+                {
+                    selectedbutton.Image.SetSprite(VanillaSprites.BlueBtnLong);
+                    button.Image.SetSprite(VanillaSprites.GreenBtnLong);
+                    SaveMenu.selectedSaveDescription.SetText(description);
+                    selectedbutton = button;
+                };
+                if (description.Equals("Error"))
+                { 
+                    button = ModHelperButton.Create(new Info(name + "Button", width: 562, height: 200), VanillaSprites.RedBtnLong, null);
+                    button.AddText(new Info("Text", 0, 0, 500, 100), name, 60f);
+                    return button;
+                }
             }
+        if (sprite == null)
+        {
+            button = ModHelperButton.Create(new Info(name + "Button", width: 562, height: 200), VanillaSprites.BlueBtnLong, onclick);
+            button.AddText(new Info(name + "Button", 0, 0, 500, 100), name, 60f);
+            return button;
         }
-
-        return null;
+        button = ModHelperButton.Create(new Info(name + "Button", width: 562, height: 200), sprite, onclick);
+        button.AddText(new Info(name + "Button", 0, 0, 500, 100), name, 60f);
+        return button;
+        
     }
 }

@@ -1,12 +1,12 @@
 ﻿global using BTD_Mod_Helper;
 global using MelonLoader;
-global using BTD6ModdedSaveHelper;
-using Main = BTD6ModdedSaveHelper.Main;
+global using BTD6SaveMenu;
+using Main = BTD6SaveMenu.Main;
 
 [assembly: MelonInfo(typeof(Main), ModHelperData.Name, ModHelperData.Version, ModHelperData.RepoOwner)]
 [assembly: MelonGame("Ninja Kiwi", "BloonsTD6")]
 
-namespace BTD6ModdedSaveHelper;
+namespace BTD6SaveMenu;
 
 using UnhollowerRuntimeLib;
 
@@ -15,7 +15,7 @@ public partial class Main : BloonsTD6Mod
     public override void OnApplicationStart()
     {
         base.OnApplicationStart();
-        MelonLogger.Msg("BTD6ModdedSaveHelper Has Loaded");
+        MelonLogger.Msg("BTD6SaveMenu Has Loaded");
     }
 
     internal static T Create<T>(Info info) where T : ModHelperComponent

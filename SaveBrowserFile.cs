@@ -1,4 +1,4 @@
-namespace BTD6ModdedSaveHelper;
+namespace BTD6SaveMenu;
 
 using BTD_Mod_Helper.Extensions;
 

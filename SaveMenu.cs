@@ -1,10 +1,11 @@
-﻿namespace BTD6ModdedSaveHelper;
+﻿namespace BTD6SaveMenu;
 
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Unity;
 using Assets.Scripts.Unity.Bridge;
+using Assets.Scripts.Unity.UI_New.InGame;
 using Assets.Scripts.Unity.UI_New.Popups;
 using BTD_Mod_Helper.Extensions;
 using TMPro;
@@ -12,26 +13,19 @@ using TMPro;
 public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
 {
     private static Dictionary<MapSaveDataModel, SaveBrowserFile> savePanels = new();
-    private static Dictionary<SaveBrowserFile, ModHelperButton> infoButtons = new();
+    private static List<ModHelperButton> infoButtons = new();
 
-    private static ModHelperScrollPanel savesList;
     private static ModHelperScrollPanel infoList;
     public static ModHelperScrollPanel descriptionPanel;
-    private static ModHelperPanel InfoPanel;
-    private static ModHelperButton towersbutton;
-    private static ModHelperButton heroesbutton;
-    private static ModHelperButton historybutton;
-    public static ModHelperImage previewimage;
 
-
-    private static ModHelperPanel selectedSavePanel;
     private static ModHelperText selectedSaveName;
     private static SaveBrowserFile saveTemplate;
-    internal static MapSaveDataModel selectedSave;
+    public static MapSaveDataModel selectedSave;
     public static ModHelperText selectedSaveDescription;
 
-    public override bool OnMenuOpened(Object data)
+    public override bool OnMenuOpened(Object data = null)
     {
+        CommonForegroundScreen.instance.heading.SetActive(true);
         CommonForegroundHeader.SetText("Saves List");
 
         var panelTransform = GameMenu.gameObject.GetComponentInChildrenByName<RectTransform>("Panel");
@@ -42,53 +36,57 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         CreateLeftMenu(SaveMenu);
         CreateMiddleMenu(SaveMenu);
         CreateRightMenu(SaveMenu);
-
-        selectedSave = savePanels.First().Key;
+        if (data == null)
+            selectedSave = savePanels.First().Key;
+        else
+        {
+            selectedSave = (MapSaveDataModel) data;
+        }
         SetSelectedSave(selectedSave);
-
+        MelonCoroutines.Start(CreateSavePanels()); 
         updatemiddlemenu(selectedSave);
-        MelonCoroutines.Start(CreateSavePanels());
         return false;
     }
-
+    internal static void SetSelectedSave(MapSaveDataModel mapSave)
+    {
+        selectedSave = mapSave;
+        if (mapSave.mapName == "Tutorial")
+            selectedSaveName.SetText("MonkeyMeadow");
+        else
+            selectedSaveName.SetText(mapSave.mapName);
+    }
     private static void updatemiddlemenu(MapSaveDataModel save)
     {
-        try
-        {
-            towersbutton.gameObject.Destroy();
-            heroesbutton.gameObject.Destroy();
-            historybutton.gameObject.Destroy();
-        }
-        catch
-        {
-        }
-
-        towersbutton = InfoButtons.CreateTowersButton(save);
-        towersbutton.Image.SetSprite(VanillaSprites.GreenBtnLong);
-        InfoButtons.selectedbutton = towersbutton;
-        infoList.AddScrollContent(towersbutton);
+        infoList.ScrollContent.gameObject.DestroyAllChildren();
+        var towersbutton = InfoButton.CreateButton(save,"Towers",null,VanillaSprites.GreenBtnLong,true);
+        InfoButton.selectedbutton = towersbutton;
+        
         selectedSaveDescription.SetText(GetDescription(save));
 
-        heroesbutton = InfoButtons.CreateHeroesButton(save);
-        infoList.AddScrollContent(heroesbutton);
-        historybutton = InfoButtons.CreateHistoryButton(save);
-        infoList.AddScrollContent(historybutton);
+        infoList.AddScrollContent(towersbutton);
+        infoList.AddScrollContent(InfoButton.CreateButton(save,"Heroes",null,null,false,true)); 
+        infoList.AddScrollContent(InfoButton.CreateButton(save,"Sold",null,null,false,false,true));
+        infoList.AddScrollContent(InfoButton.CreateButton(save,"Misc",null,null,false,false, false, true));
+        infoList.AddScrollContent(InfoButton.CreateButton(save, "Show Preview", () =>
+        {
+            Open<PreviewMenu>(save);
+        }, VanillaSprites.ParagonBtnLong));
     }
 
     private static IEnumerator CreateSavePanels()
     {
         var keys = savePanels.Keys.ToList();
+        yield return null;
         var i = 0;
         foreach (var key in keys)
-        {
+        {      
+            yield return null;
             var panel = savePanels[key] = saveTemplate.Duplicate(key.mapName);
             if (i > 4) yield return null;
             panel.SetSave(key);
             if (i > 4) yield return null;
             i++;
         }
-
-        yield return null;
     }
 
     private void CreateMiddleMenu(ModHelperPanel SaveMenu)
@@ -111,7 +109,20 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
             Height = -Padding
         }, "", FontLarge, TextAlignmentOptions.Left);
         selectedSaveName.Text.enableAutoSizing = true;
-        firstRow.AddButton(new Info("Edit") {Size = ModNameHeight}, VanillaSprites.EditBtn, new Action(() => { }));
+        firstRow.AddButton(new Info("Start") {Size = ModNameHeight}, VanillaSprites.BlueRoundPlayBtn, new Action(() =>
+        {
+            var ingamedata = InGameData.Editable;
+            ingamedata.selectedMap = selectedSave.mapName;
+            ingamedata.selectedDifficulty = selectedSave.mapDifficulty;
+            ingamedata.selectedMode = selectedSave.modeName;
+            ingamedata.gameType = selectedSave.gameType;
+            ingamedata.includeTutorial= false;
+            //ingamedata.monkeyTeamsActive = false;
+            ingamedata.playerContentId = selectedSave.playerChallengeId;
+            //ingamedata.goldenBloonActive = false;
+            ingamedata.selectedCoopMode = false;
+            MenuManager.instance.OpenMenu("DifficultySelectUI", ingamedata);
+        }));
         firstRow.AddButton(new Info("Delete")
         {
             Size = ModNameHeight
@@ -119,23 +130,13 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         {
             PopupScreen.instance.SafelyQueue(screen => screen.ShowPopup(PopupScreen.Placement.menuCenter, "Confirm Delete Save?", "This will permanently delete the specified save file with no recovery", new Action(() =>
             {
-                GameExt.GetPlayerProfile(Game.instance).savedMaps.Remove(selectedSave.mapName);
+                Game.instance.GetPlayerProfile().savedMaps.Remove(selectedSave.mapName);
                 savePanels[selectedSave].gameObject.Destroy();
                 savePanels.Remove(selectedSave);
                 SetSelectedSave(savePanels.First().Key);
             }), "Yes", null, "No", Popup.TransitionAnim.Scale));
         }));
-        infoList = middleMenu.AddScrollPanel(new Info("MapListScroll", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, Padding, Padding);
-        previewimage = middleMenu.AddImage(new Info("PreviewImage", InfoPreset.Flex)
-        {
-            X = 0,
-            Y = 0,
-            Width = 500,
-            Height = 400
-        }, VanillaSprites.MainBGPanelGrey);
-        previewimage.SetActive(false);
-        //                string TowerName=__instance.objectId.guidRef.Split('-')[0];
-        //guidRef="Ui[Tempest-Portrait]"
+        infoList = middleMenu.AddScrollPanel(new Info("InfoButtonScroll", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, Padding, Padding);
     }
 
     private static void CreateLeftMenu(ModHelperPanel SaveMenu)
@@ -148,9 +149,9 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         }, null, RectTransform.Axis.Horizontal, Padding);
         topRow.AddPanel(new Info("Filler", InfoPreset.Flex));
 
-        savesList = leftMenu.AddScrollPanel(new Info("MapListScroll", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, Padding, Padding);
+        var savesList = leftMenu.AddScrollPanel(new Info("MapListScroll", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, Padding, Padding);
 
-        savePanels = new Dictionary<MapSaveDataModel, SaveBrowserFile>();
+        savePanels = new ();
 
         saveTemplate = SaveBrowserFile.CreateTemplate();
         savesList.AddScrollContent(saveTemplate);
@@ -161,17 +162,9 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         }
     }
 
-    internal static void SetSelectedSave(MapSaveDataModel mapSave)
-    {
-        selectedSave = mapSave;
-        if (mapSave.mapName == "Tutorial")
-            selectedSaveName.SetText("MonkeyMeadow");
-        else
-            selectedSaveName.SetText(mapSave.mapName);
-        updatemiddlemenu(mapSave);
-    }
+    
 
-    public static string GetDescription(MapSaveDataModel mapSave, bool hero = false, bool history = false)
+    public static string GetDescription(MapSaveDataModel mapSave, bool towers = false, bool hero = false, bool history = false, bool misc=false)
     {
         int[] tiers = {0, 0, 0};
         List<string> description = new();
@@ -179,6 +172,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         List<string> standardheroes = new();
         standardtowers.Clear();
         description.Clear();
+        standardheroes.Clear();
         foreach (var towermodel in Game.instance.model.towers)
         {
             if (towermodel.IsHero())
@@ -188,43 +182,40 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
                     standardheroes.Add(towermodel.baseId);
                 }
             }
-
             if (!towermodel.isGeraldoItem && !towermodel.isPowerTower && !towermodel.isSubTower && towermodel.IsStandardTower() && towermodel.IsBaseTower && !towermodel.IsHero() && !standardheroes.Contains(towermodel.baseId))
             {
                 standardtowers.Add(towermodel.baseId);
             }
         }
 
-        description.Clear();
         var errorcount = 0;
-        if (!history)
+        if (towers)
         {
-            foreach (var tower in mapSave.placedTowers)
+            foreach (var tower in mapSave.placedTowers.Where(tower => tower != null))
             {
-                if (tower != null)
+                if (string.IsNullOrEmpty(tower.heroId) && !hero && standardtowers.Contains(tower.baseId))
                 {
-                    if (string.IsNullOrEmpty(tower.heroId) && !hero && standardtowers.Contains(tower.baseId))
-                    {
-                        if (tower.pathOneTier == 6)
-                            tiers = new[] {5, 5, 5};
-                        else
-                            tiers = new[] {tower.pathOneTier, tower.pathTwoTier, tower.pathThreeTier};
-                        description.Add(tower.baseId + " - " + string.Join(", ", tiers));
-                    }
-                    else if (hero && !string.IsNullOrEmpty(tower.heroId))
-                    {
-                        var herotier = "Level " + tower.pathOneTier;
-                        description.Add(tower.baseId + " - " + herotier);
-                    }
+                    if (tower.pathOneTier == 6)
+                        tiers = new[] {5, 5, 5};
+                    else
+                        tiers = new[] {tower.pathOneTier, tower.pathTwoTier, tower.pathThreeTier};
+                    description.Add(tower.baseId + " - " + string.Join(", ", tiers));
                 }
-                else
+                else if (hero && !string.IsNullOrEmpty(tower.heroId))
                 {
-                    errorcount++;
-                    description.Add("Error: Tower details not found");
+                    var herotier = "Level " + tower.pathOneTier;
+                    description.Add(tower.baseId + " - " + herotier);
                 }
             }
+
+            foreach (var tower in mapSave.placedTowers.Where(tower => tower == null))
+            {
+                errorcount++;
+                description.Add("Error: Tower details not found");
+            }
+            return finalizeDescription(description);
         }
-        else
+        if (history)
         {
             foreach (var tower in mapSave.towerHistory)
             {
@@ -241,13 +232,27 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
                     }
                 }
             }
+            return finalizeDescription(description);
+        }
+        
+        if (misc)
+        {
+            description.Add("Round: " + mapSave.round);
+            description.Add("Health: " + mapSave.health);
+            description.Add("Mana Shield: " + mapSave.shield);
+            //description.Add("Cash: " + mapSave.players[0].cash);
+            return finalizeDescription(description);
         }
 
-        var combined = string.Join("\n", description);
-        if (errorcount <= mapSave.placedTowers.Count)
-            return combined;
-        else
-            return "Error";
+        string finalizeDescription(List<string> description)
+        {
+            var combined = string.Join("\n", description);
+            if (errorcount <= mapSave.placedTowers.Count)
+                return combined;
+            else
+                return "Error";
+        }
+        return "Error";
     }
 
     public override void OnMenuClosed()
@@ -257,7 +262,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
 
     private static void CreateRightMenu(ModHelperPanel SaveMenu)
     {
-        selectedSavePanel = SaveMenu.AddPanel(new Info("SaveInfo", (MenuWidth - RightMenuWidth) / 2f, 0, RightMenuWidth, MenuHeight), VanillaSprites.MainBGPanelBlue, RectTransform.Axis.Vertical, Padding, Padding);
+        var selectedSavePanel = SaveMenu.AddPanel(new Info("SaveInfo", (MenuWidth - RightMenuWidth) / 2f, 0, RightMenuWidth, MenuHeight), VanillaSprites.MainBGPanelBlue, RectTransform.Axis.Vertical, Padding, Padding);
         var topRow = selectedSavePanel.AddPanel(new Info("TopRow")
         {
             Height = ModNameHeight,
@@ -265,7 +270,6 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         }, null, RectTransform.Axis.Horizontal, Padding);
 
         descriptionPanel = selectedSavePanel.AddScrollPanel(new Info("DescriptionPanel", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, 50, 50);
-
         selectedSaveDescription = ModHelperText.Create(new Info("DescriptionText")
         {
             Width = RightMenuWidth - Padding * 4
@@ -275,6 +279,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         selectedSaveDescription.Text.enableAutoSizing = true;
         selectedSaveDescription.Text.lineSpacing = Padding / 2f;
         selectedSaveDescription.Text.font = Fonts.Btd6FontBody;
+        //guidRef="Ui[Tempest-Portrait]"
     }
 
     #region Constants
