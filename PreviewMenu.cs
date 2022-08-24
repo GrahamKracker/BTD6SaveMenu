@@ -26,7 +26,6 @@ public class PreviewMenu : ModGameMenu<PowersSelectScreen>
         CommonForegroundScreen.instance.Hide();
         CommonForegroundScreen.instance.Show(true, "", false, false, false, false, false, false);
         CommonForegroundScreen.instance.heading.gameObject.SetActive(false);
-        //CommonForegroundScreen.instance.monkeyMoney.Destroy();
         previewpanel = gameObject.AddModHelperPanel(new Info("PreviewPanel", InfoPreset.FillParent));
         previewimage = previewpanel.AddImage(new Info("PreviewImage", InfoPreset.FillParent), VanillaSprites.UISprite);
         foreach (var map in GameData.Instance.mapSet.maps)
