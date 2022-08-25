@@ -77,19 +77,29 @@ internal static class SaveMenuModExt
     public static void SetSave(this SaveBrowserFile save, MapSaveDataModel map)
     {
         save.MainButton.Button.SetOnClick(() => { SaveMenu.SetSelectedSave(map); });
-        save.Name.SetText(map.mapName);
+        var name = save.Name;
+        name.SetText(map.mapName);
         if (map.mapName == "Tutorial") save.Name.SetText("MonkeyMeadow");
-        var text = save.GameVersion;
-        text.SetText(map.gameVersion);
         
-        if (int.Parse(map.gameVersion.Split('.')[0]) < Main.profile.savedByGameVersion.Major)
-            text.Text.color = Color.red;
         
-        if (int.Parse(map.gameVersion.Split('.')[1]) < Main.profile.savedByGameVersion.Minor)
-            text.Text.color = Color.yellow;
-        MelonLogger.Msg($"parse: {Main.profile.savedByGameVersion.Major + "." + Main.profile.savedByGameVersion.Minor}");
-        if (map.gameVersion == Main.profile.savedByGameVersion.Major+"."+Main.profile.savedByGameVersion.Minor)
-            text.Text.color = Color.green;
+        var gameVersion = save.GameVersion;
+        gameVersion.SetText(map.gameVersion);
+
+        if (int.Parse(map.gameVersion.Split('.')[0]) < Main.profile.savedByGameVersion.Major || map.version < Assets.Scripts.Simulation.Utils.MapSaveLoader.LatestVersion)
+        {
+            gameVersion.Text.color = Color.red;
+            name.Text.color = Color.red;
+        }
+        else if (int.Parse(map.gameVersion.Split('.')[1]) < Main.profile.savedByGameVersion.Minor)
+        {
+            gameVersion.Text.color = Color.yellow;
+            name.Text.color = Color.yellow;
+        }        
+        else if (map.gameVersion == Main.profile.savedByGameVersion.Major+"."+Main.profile.savedByGameVersion.Minor)
+        {
+            gameVersion.Text.color = Color.green;
+            name.Text.color = Color.green;
+        }
         
         save.ModdedIcon.SetActive(false);
         save.Icon.SetActive(false);
