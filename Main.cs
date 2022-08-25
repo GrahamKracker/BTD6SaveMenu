@@ -8,10 +8,60 @@ using Main = BTD6SaveMenu.Main;
 
 namespace BTD6SaveMenu;
 
+using System.Collections.Generic;
+using System.Linq;
+using Assets.Scripts.Models;
+using Assets.Scripts.Models.Towers;
+using Assets.Scripts.Unity;
 using UnhollowerRuntimeLib;
 
-public partial class Main : BloonsTD6Mod
+public class Main : BloonsTD6Mod
 {
+    public static ProfileModel profile;
+    public static MapSaveDataModel globalselectedsave = null;
+    public static List<string> standardtowers = new();
+    public static List<string> nonstandardtowers = new();
+    public static List<string> standardheroes = new();
+    public static Dictionary<string, TowerModel> sprites = new();
+
+    public override void OnProfileLoaded(ProfileModel result)
+    {
+        base.OnProfileLoaded(result);
+        profile = result;
+    }
+    public override void OnGameModelLoaded(GameModel model)
+    {
+        base.OnGameModelLoaded(model);
+        nonstandardtowers.Clear();
+        standardtowers.Clear();
+        standardheroes.Clear();
+        foreach (var tower in model.towers)
+        {
+            if (tower.IsHero() && !standardheroes.Contains(tower.baseId + "-" + tower.tiers[0]))
+            {
+                //MelonLogger.Msg("Saved Hero: " + tower.baseId + "-" + tower.tiers[0]);
+                standardheroes.Add(tower.baseId + "-" + tower.tiers[0]);
+                sprites[tower.baseId + "-" + tower.tiers[0]] = tower;
+            }
+            else if (!tower.isGeraldoItem && !tower.isSubTower && !tower.IsHero() && !standardheroes.Contains(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]))
+            {
+                //MelonLogger.Msg("Saved Tower: " + tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]);
+                standardtowers.Add(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]);
+                sprites[tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]] = tower;
+            }
+        }
+
+        foreach (var tower in model.powers.Select(power=> power.tower))
+        {
+            if (tower != null && tower.portrait.GUID != null)
+            {
+                //MelonLogger.Msg("Saved Power: " + power.tower.baseId + "-" + power.tower.tiers[0] + power.tower.tiers[1] + power.tower.tiers[2]);
+                nonstandardtowers.Add(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]);
+                sprites[tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]] = tower;
+            }
+        }
+    }
+
     public override void OnApplicationStart()
     {
         base.OnApplicationStart();

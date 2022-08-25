@@ -18,8 +18,5 @@
     <ItemGroup>
         <None Include=".github\workflows\build.yml" />
     </ItemGroup>
-    <ItemGroup>
-      <Compile Remove="SaveButton.cs" />
-    </ItemGroup>
     <Import Project="..\btd6.targets" />
 </Project>

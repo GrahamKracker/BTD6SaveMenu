@@ -2,10 +2,9 @@
 
 using BTD_Mod_Helper.Extensions;
 
-public class SavePanel
+public static class SavePanel
 {
     private static ModHelperPanel panel;
-    private static ModHelperButton button;
 
     private static void opensavemenu()
     {
@@ -18,7 +17,7 @@ public class SavePanel
         {
             Anchor = new Vector2(1, 0), Pivot = new Vector2(1, 0)
         });
-        button = panel.AddButton(new Info("SavePanelButton", -2325, 440, 900, 280, new Vector2(1, 0), new Vector2(0.5f, 0)), VanillaSprites.GreenBtnLong, new Action(opensavemenu));
+        var button = panel.AddButton(new Info("SavePanelButton", -2325, 440, 900, 280, new Vector2(1, 0), new Vector2(0.5f, 0)), VanillaSprites.GreenBtnLong, new Action(opensavemenu));
         button.AddImage(new Info("SavePanelImage", 140, 45, 200, 200, new Vector2(0, 0), new Vector2(0.5f, 0)), VanillaSprites.SaveGameIcon);
         button.AddText(new Info("Text", 50, 0, 1000, 200), "Saves List", 90f);
     }
@@ -31,7 +30,6 @@ public class SavePanel
             CreatePanel(screen.gameObject);
     }
 
-    
 
     private static void HideButton()
     {
@@ -48,8 +46,7 @@ public class SavePanel
     {
         var screen = CommonForegroundScreen.instance.transform;
         var ModSavePanel = screen.FindChild("SavePanel");
-        if (ModSavePanel != null) 
+        if (ModSavePanel != null)
             HideButton();
-        //panel.gameObject.Destroy();
     }
 }

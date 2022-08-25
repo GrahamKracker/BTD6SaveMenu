@@ -7,8 +7,8 @@ on:
       - '*'
   pull_request:
     branches: [ "master" ]
-    
-    
+
+
 env:
   PROJECT_NAME: BTD6SaveMenu
   MOD_HELPER_BRANCH: 3.0_Features
@@ -104,8 +104,8 @@ jobs:
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x # net6 can still build older as well
-          
-          
+
+
       - name: Build
         run: dotnet build -c Release -p:BloonsTD6="../${{ env.BLOONSTD6 }}" "${{ env.PROJECT_NAME }}/${{ env.PROJECT_NAME }}.csproj"
 
@@ -115,12 +115,12 @@ jobs:
         with:
           name: ${{ env.PROJECT_NAME }}.dll
           path: ${{ env.BLOONSTD6 }}/Mods/${{ env.PROJECT_NAME }}.dll
-          
-          
+
+
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
-        with: 
+        with:
           files: ${{ env.BLOONSTD6 }}/Mods/${{ env.PROJECT_NAME }}.dll
           body_path: ${{ env.PROJECT_NAME }}/LATEST.md
           fail_on_unmatched_files: true

@@ -1,5 +1,6 @@
 namespace BTD6SaveMenu;
 
+using Assets.Scripts.Unity;
 using BTD_Mod_Helper.Extensions;
 
 [RegisterTypeInIl2Cpp(false)]
@@ -52,28 +53,60 @@ public class SaveBrowserFile : ModHelperComponent
 
 internal static class SaveMenuModExt
 {
+    public static void SetupIcons(this SaveBrowserFile save, MapSaveDataModel map)
+    {
+        try
+        {
+            foreach (var mapSetMap in GameData.Instance.mapSet.maps)
+            {
+                if (mapSetMap.mapSprite != null && map.mapName == mapSetMap.id)
+                {
+                    save.Icon.Image.SetSprite(mapSetMap.mapSprite);
+                    save.Icon.SetActive(true);
+                }
+                else if (!GameData._instance.mapSet.Maps.items.Any(x => x.id == map.mapName))
+                {
+                    save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("ModsBtn").guidRef);
+                    save.ModdedIcon.SetActive(true);
+                }
+            }
+        }
+        catch (NullReferenceException) {}
+}
+
     public static void SetSave(this SaveBrowserFile save, MapSaveDataModel map)
     {
         save.MainButton.Button.SetOnClick(() => { SaveMenu.SetSelectedSave(map); });
         save.Name.SetText(map.mapName);
         if (map.mapName == "Tutorial") save.Name.SetText("MonkeyMeadow");
-        save.GameVersion.SetText(map.gameVersion);
+        var text = save.GameVersion;
+        text.SetText(map.gameVersion);
+        
+        if (int.Parse(map.gameVersion.Split('.')[0]) < Main.profile.savedByGameVersion.Major)
+            text.Text.color = Color.red;
+        
+        if (int.Parse(map.gameVersion.Split('.')[1]) < Main.profile.savedByGameVersion.Minor)
+            text.Text.color = Color.yellow;
+        MelonLogger.Msg($"parse: {Main.profile.savedByGameVersion.Major + "." + Main.profile.savedByGameVersion.Minor}");
+        if (map.gameVersion == Main.profile.savedByGameVersion.Major+"."+Main.profile.savedByGameVersion.Minor)
+            text.Text.color = Color.green;
+        
+        save.ModdedIcon.SetActive(false);
+        save.Icon.SetActive(false);
         foreach (var mapSetMap in GameData.Instance.mapSet.maps)
         {
             if (map.mapName == mapSetMap.id)
             {
-                save.ModdedIcon.SetActive(false);
+                save.Icon.Image.SetSprite(mapSetMap.mapSprite);     
                 save.Icon.SetActive(true);
-                save.Icon.Image.SetSprite(mapSetMap.mapSprite);
+
             }
             else if (!GameData._instance.mapSet.Maps.items.Any(x => x.id == map.mapName))
-            {
-                save.Icon.SetActive(false);
+            {               
+                save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("ModsBtn").guidRef); 
                 save.ModdedIcon.SetActive(true);
-                save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("ModsBtn").guidRef);
             }
         }
-
         save.SetActive(true);
     }
 }
