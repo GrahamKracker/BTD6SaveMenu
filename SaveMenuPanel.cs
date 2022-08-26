@@ -1,12 +1,14 @@
 namespace BTD6SaveMenu;
 
+using System.Linq;
+using static Main;
 using Assets.Scripts.Unity;
 using BTD_Mod_Helper.Extensions;
 
 [RegisterTypeInIl2Cpp(false)]
-public class SaveBrowserFile : ModHelperComponent
+public class SaveMenuPanel : ModHelperComponent
 {
-    public SaveBrowserFile(IntPtr ptr) : base(ptr)
+    public SaveMenuPanel(IntPtr ptr) : base(ptr)
     {
     }
 
@@ -17,9 +19,9 @@ public class SaveBrowserFile : ModHelperComponent
     public ModHelperText Name => GetDescendent<ModHelperText>("Name");
     public ModHelperText GameVersion => GetDescendent<ModHelperText>("GameVersion");
 
-    public static SaveBrowserFile CreateTemplate()
+    public static SaveMenuPanel CreateTemplate()
     {
-        var save = Main.Create<SaveBrowserFile>(new Info("SaveTemplate")
+        var save = Main.Create<SaveMenuPanel>(new Info("SaveTemplate")
         {
             Height = 400,
             FlexWidth = 1
@@ -53,7 +55,7 @@ public class SaveBrowserFile : ModHelperComponent
 
 internal static class SaveMenuModExt
 {
-    public static void SetupIcons(this SaveBrowserFile save, MapSaveDataModel map)
+    public static void SetupIcons(this SaveMenuPanel save, MapSaveDataModel map)
     {
         try
         {
@@ -71,49 +73,83 @@ internal static class SaveMenuModExt
                 }
             }
         }
-        catch (NullReferenceException) {}
-}
+        catch (NullReferenceException)
+        {
+        }
+    }
 
-    public static void SetSave(this SaveBrowserFile save, MapSaveDataModel map)
+    public static void SetSave(this SaveMenuPanel save, MapSaveDataModel map)
     {
         save.MainButton.Button.SetOnClick(() => { SaveMenu.SetSelectedSave(map); });
         var name = save.Name;
         name.SetText(map.mapName);
         if (map.mapName == "Tutorial") save.Name.SetText("MonkeyMeadow");
-        
-        
+
+
         var gameVersion = save.GameVersion;
         gameVersion.SetText(map.gameVersion);
 
-        if (int.Parse(map.gameVersion.Split('.')[0]) < Main.profile.savedByGameVersion.Major || map.version < Assets.Scripts.Simulation.Utils.MapSaveLoader.LatestVersion)
+        if (int.Parse(map.gameVersion.Split('.')[0]) < profile.savedByGameVersion.Major || map.version < Assets.Scripts.Simulation.Utils.MapSaveLoader.LatestVersion)
         {
             gameVersion.Text.color = Color.red;
-            name.Text.color = Color.red;
         }
         else if (int.Parse(map.gameVersion.Split('.')[1]) < Main.profile.savedByGameVersion.Minor)
         {
             gameVersion.Text.color = Color.yellow;
-            name.Text.color = Color.yellow;
-        }        
-        else if (map.gameVersion == Main.profile.savedByGameVersion.Major+"."+Main.profile.savedByGameVersion.Minor)
+        }
+        else if (map.gameVersion == Main.profile.savedByGameVersion.Major + "." + Main.profile.savedByGameVersion.Minor)
         {
             gameVersion.Text.color = Color.green;
+        }
+
+        bool iscompatible = true;
+        foreach (var tower in map.placedTowers)
+        {
+            if (standardtowers.Contains(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) || nonstandardtowers.Contains(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier))
+            {
+                //MelonLogger.Msg("Placed Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+            }
+            else if (standardheroes.Contains(tower.baseId + "-" + tower.pathOneTier))
+            {
+                //MelonLogger.Msg("Placed Hero: " + tower.baseId + "-" + tower.pathOneTier);
+            }
+            else
+            {
+                if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) != null)
+                {
+                    //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+                }
+                else
+                {
+                    iscompatible = false;
+                }
+            }
+        }
+        if (save.GameVersion.Text.color == Color.green)
+        {
             name.Text.color = Color.green;
         }
-        
+        if (save.GameVersion.Text.color == Color.yellow)
+        {
+            name.Text.color = Color.yellow;
+        }
+
+        if (!iscompatible || save.GameVersion.Text.color == Color.red)
+        {
+            name.Text.color = Color.red;
+        }
         save.ModdedIcon.SetActive(false);
         save.Icon.SetActive(false);
         foreach (var mapSetMap in GameData.Instance.mapSet.maps)
         {
             if (map.mapName == mapSetMap.id)
             {
-                save.Icon.Image.SetSprite(mapSetMap.mapSprite);     
+                save.Icon.Image.SetSprite(mapSetMap.mapSprite);
                 save.Icon.SetActive(true);
-
             }
             else if (!GameData._instance.mapSet.Maps.items.Any(x => x.id == map.mapName))
-            {               
-                save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("ModsBtn").guidRef); 
+            {
+                save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("ModsBtn").guidRef);
                 save.ModdedIcon.SetActive(true);
             }
         }

@@ -29,6 +29,7 @@ public class Main : BloonsTD6Mod
         base.OnProfileLoaded(result);
         profile = result;
     }
+
     public override void OnGameModelLoaded(GameModel model)
     {
         base.OnGameModelLoaded(model);
@@ -51,9 +52,9 @@ public class Main : BloonsTD6Mod
             }
         }
 
-        foreach (var tower in model.powers.Select(power=> power.tower))
+        foreach (var tower in model.powers.Select(power => power.tower))
         {
-            if (tower != null && tower.portrait.GUID != null)
+            if (tower != null && tower.portrait.guidRef != null)
             {
                 //MelonLogger.Msg("Saved Power: " + power.tower.baseId + "-" + power.tower.tiers[0] + power.tower.tiers[1] + power.tower.tiers[2]);
                 nonstandardtowers.Add(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]);

@@ -13,7 +13,7 @@ using TMPro;
 
 public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
 {
-    private static Dictionary<MapSaveDataModel, SaveBrowserFile> savePanels = new();
+    private static Dictionary<MapSaveDataModel, SaveMenuPanel> savePanels = new();
     private static List<ModHelperButton> infoButtons = new();
 
     private static ModHelperScrollPanel infoList;
@@ -21,7 +21,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
 
     public static ModHelperPanel middleMenu;
     private static ModHelperText selectedSaveName;
-    private static SaveBrowserFile saveTemplate;
+    private static SaveMenuPanel saveTemplate;
     public static MapSaveDataModel selectedSave;
     public static ModHelperText selectedSaveDescription;
 
@@ -41,16 +41,17 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         MelonCoroutines.Start(CreateSavePanels());
         if (globalselectedsave == null)
         {
-            MelonLogger.Msg("SaveMenu opened without data");
+            //MelonLogger.Msg("SaveMenu opened without data");
             selectedSave = savePanels.First().Key;
             globalselectedsave = selectedSave;
         }
         else
         {
-            MelonLogger.Msg("SaveMenu opened with data");
+            //MelonLogger.Msg("SaveMenu opened with data");
             selectedSave = globalselectedsave;
             globalselectedsave = selectedSave;
-        }    
+        }
+
         SetSelectedSave(selectedSave);
         MelonCoroutines.Start(CreateIcons());
         return false;
@@ -81,7 +82,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         infoList.DeleteObject();
         infoList = middleMenu.AddScrollPanel(new Info("InfoButtonScroll", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, Padding, Padding);
         var towersbutton = InfoButton.CreateButton(save, "Towers", null, VanillaSprites.GreenBtnLong, true);
-        InfoButton.selectedbutton = towersbutton;  
+        InfoButton.selectedbutton = towersbutton;
         yield return null;
         selectedSaveDescription.SetText(GetDescription(save, true));
         yield return null;
@@ -97,15 +98,13 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
     {
         var keys = savePanels.Keys.ToList();
         yield return null;
-        var i = 0;
         foreach (var key in keys)
         {
             yield return null;
             var panel = savePanels[key] = saveTemplate.Duplicate(key.mapName);
-            if (i > 4) yield return null;
+            yield return null;
             panel.SetSave(key);
-            if (i > 4) yield return null;
-            i++;
+            yield return null;
         }
     }
 
@@ -173,7 +172,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
 
         savePanels = new();
 
-        saveTemplate = SaveBrowserFile.CreateTemplate();
+        saveTemplate = SaveMenuPanel.CreateTemplate();
         savesList.AddScrollContent(saveTemplate);
         foreach (var (name, map) in Game.instance.GetBtd6Player().Data.savedMaps)
         {
@@ -192,10 +191,11 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         standardheroes.Clear();
         foreach (var towermodel in Game.instance.model.towers)
         {
-            if (towermodel.IsHero()&& !standardheroes.Contains(towermodel.baseId))
+            if (towermodel.IsHero() && !standardheroes.Contains(towermodel.baseId))
             {
                 standardheroes.Add(towermodel.baseId);
             }
+
             if (!towermodel.isGeraldoItem && !towermodel.isPowerTower && !towermodel.isSubTower && towermodel.IsStandardTower() && towermodel.IsBaseTower && !towermodel.IsHero() && !standardheroes.Contains(towermodel.baseId))
             {
                 standardtowers.Add(towermodel.baseId);
@@ -204,13 +204,13 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
 
         var errorcount = 0;
         if (towers)
-        {      
+        {
             foreach (var tower in mapSave.placedTowers)
             {
                 if (tower != null)
                 {
                     if (string.IsNullOrEmpty(tower.heroId) && standardtowers.Contains(tower.baseId))
-                    {       
+                    {
                         int[] tiers;
                         if (tower.pathOneTier == 6)
                             tiers = new[] {5, 5, 5};
@@ -269,8 +269,8 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
             description.Add("Round: " + mapSave.round);
             description.Add("Health: " + mapSave.health);
             description.Add("Mana Shield: " + mapSave.shield);
+            description.Add("Difficulty: " + mapSave.mapDifficulty);
             description.Add("Mode: " + mapSave.modeName);
-            description.Add("Map Difficulty: " + mapSave.mapDifficulty);
             foreach (var (sim, player) in mapSave.players)
             {
                 if (player != null)
@@ -282,7 +282,13 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
                 }
             }
 
-            description.Add("Has Won: " + mapSave.matchWon);
+            if (mapSave.matchWon)
+                description.Add("The game is in freeplay");
+            else
+            {
+                description.Add("The game is not in freeplay");
+            }
+
             description.Add("Abilities Used: " + mapSave.abilitiesActivated);
             foreach (var loan in mapSave.loans)
                 description.Add("Debt: " + loan.amount);
@@ -298,8 +304,8 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
             var combined = string.Join("\n", description);
             if (errorcount <= mapSave.placedTowers.Count)
                 return combined;
-            else
-                return "Error";
+
+            return "Error";
         }
 
         return "Error";
