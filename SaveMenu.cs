@@ -1,20 +1,25 @@
 ﻿namespace BTD6SaveMenu;
 
-using static BTD6SaveMenu.Main;
+using static Main;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Unity;
-using Assets.Scripts.Unity.Bridge;
 using Assets.Scripts.Unity.UI_New.InGame;
 using Assets.Scripts.Unity.UI_New.Popups;
 using BTD_Mod_Helper.Extensions;
+using System;
+using Assets.Scripts.Unity.Menu;
+using Assets.Scripts.Unity.UI_New.ChallengeEditor;
+using BTD_Mod_Helper.Api;
+using BTD_Mod_Helper.Api.Components;
+using BTD_Mod_Helper.Api.Enums;
 using TMPro;
+using UnityEngine;
 
 public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
 {
     private static Dictionary<MapSaveDataModel, SaveMenuPanel> savePanels = new();
-    private static List<ModHelperButton> infoButtons = new();
 
     private static ModHelperScrollPanel infoList;
     public static ModHelperScrollPanel descriptionPanel;
@@ -25,7 +30,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
     public static MapSaveDataModel selectedSave;
     public static ModHelperText selectedSaveDescription;
 
-    public override bool OnMenuOpened(Object data)
+    public override bool OnMenuOpened(Il2CppSystem.Object data)
     {
         CommonForegroundScreen.instance.heading.SetActive(true);
         CommonForegroundHeader.SetText("Saves List");
@@ -53,17 +58,19 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         }
 
         SetSelectedSave(selectedSave);
-        MelonCoroutines.Start(CreateIcons());
+        //MelonCoroutines.Start(CreateIcons());
         return false;
     }
 
-    private static IEnumerator CreateIcons()
+    private IEnumerator CreateIcons()
     {
         foreach (var key in savePanels.Keys.ToList())
         {
             yield return null;
+            if (Closing) yield break;
             savePanels[key].SetupIcons(key);
             yield return null;
+            if (Closing) yield break;
         }
     }
 
@@ -81,6 +88,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
     {
         infoList.DeleteObject();
         infoList = middleMenu.AddScrollPanel(new Info("InfoButtonScroll", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, Padding, Padding);
+        yield return null;
         var towersbutton = InfoButton.CreateButton(save, "Towers", null, VanillaSprites.GreenBtnLong, true);
         InfoButton.selectedbutton = towersbutton;
         yield return null;
@@ -94,16 +102,19 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         yield return null;
     }
 
-    private static IEnumerator CreateSavePanels()
+    private IEnumerator CreateSavePanels()
     {
         var keys = savePanels.Keys.ToList();
         yield return null;
         foreach (var key in keys)
         {
             yield return null;
+            if (Closing) yield break;
             var panel = savePanels[key] = saveTemplate.Duplicate(key.mapName);
             yield return null;
+            if (Closing) yield break;
             panel.SetSave(key);
+            if (Closing) yield break;
             yield return null;
         }
     }
@@ -158,7 +169,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
         infoList = middleMenu.AddScrollPanel(new Info("InfoButtonScroll", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, Padding, Padding);
     }
 
-    private static void CreateLeftMenu(ModHelperPanel SaveMenu)
+    private void CreateLeftMenu(ModHelperPanel SaveMenu)
     {
         var leftMenu = SaveMenu.AddPanel(new Info("LeftMenu", (MenuWidth - LeftMenuWidth) / -2f, 0, LeftMenuWidth, MenuHeight), VanillaSprites.MainBGPanelBlue, RectTransform.Axis.Vertical, Padding, Padding);
         var topRow = leftMenu.AddPanel(new Info("TopRow")
@@ -167,6 +178,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
             FlexWidth = 1
         }, null, RectTransform.Axis.Horizontal, Padding);
         topRow.AddPanel(new Info("Filler", InfoPreset.Flex));
+
 
         var savesList = leftMenu.AddScrollPanel(new Info("MapListScroll", InfoPreset.Flex), RectTransform.Axis.Vertical, VanillaSprites.BlueInsertPanelRound, Padding, Padding);
 
@@ -194,11 +206,13 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
             if (towermodel.IsHero() && !standardheroes.Contains(towermodel.baseId))
             {
                 standardheroes.Add(towermodel.baseId);
+                continue;
             }
 
             if (!towermodel.isGeraldoItem && !towermodel.isPowerTower && !towermodel.isSubTower && towermodel.IsStandardTower() && towermodel.IsBaseTower && !towermodel.IsHero() && !standardheroes.Contains(towermodel.baseId))
             {
                 standardtowers.Add(towermodel.baseId);
+                continue;
             }
         }
 
@@ -222,7 +236,7 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
                 else
                 {
                     errorcount++;
-                    description.Add("Error: Tower details not found");
+                    description.Add("Error tower details not found");
                 }
             }
 
@@ -253,11 +267,10 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
                     {
                         var herotier = "Level " + tower.tiers[0];
                         description.Add(tower.baseId + " - " + herotier);
+                        continue;
                     }
-                    else
-                    {
-                        description.Add(tower.baseId + " - " + string.Join(", ", tower.tiers));
-                    }
+
+                    description.Add(tower.baseId + " - " + string.Join(", ", tower.tiers));
                 }
             }
 
@@ -283,10 +296,10 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
             }
 
             if (mapSave.matchWon)
-                description.Add("The game is in freeplay");
+                description.Add("Currently in Freeplay");
             else
             {
-                description.Add("The game is not in freeplay");
+                description.Add("Currently not in Freeplay  ");
             }
 
             description.Add("Abilities Used: " + mapSave.abilitiesActivated);

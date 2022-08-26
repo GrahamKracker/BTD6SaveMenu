@@ -44,6 +44,7 @@ public class PreviewMenu : ModGameMenu<PowersSelectScreen>
                 previewimage.Image.SetSprite(map.mapSprite);
                 //previewimage.Image.SetSprite(map.mapSprite.guidRef);
                 previewimage.SetActive(true);
+                break;
             }
         }
 
@@ -51,7 +52,10 @@ public class PreviewMenu : ModGameMenu<PowersSelectScreen>
         foreach (var (sim, player) in save.players)
         {
             if (player != null)
+            {
                 cash = String.Format("{0:#,###0}", player.cash);
+                break;
+            }
         }
 
         //VanillaSprites.SaveGameIcon
@@ -71,33 +75,35 @@ public class PreviewMenu : ModGameMenu<PowersSelectScreen>
                     //MelonLogger.Msg("Placed Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
                     sprite = sprites[tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier].portrait.guidRef;
                     previewimage.AddImage(new Info($"{tower.baseId}-{tower.pathOneTier}{tower.pathTwoTier}{tower.pathThreeTier}", (float) Math.Round(tower.position.x) * towermultiplierx, (float) Math.Round(tower.position.y) * towermultipliery, 200, 200, new Vector2(.5f, .5f)), sprite);
+                    continue;
                 }
                 else if (standardheroes.Contains(tower.baseId + "-" + tower.pathOneTier))
                 {
                     //MelonLogger.Msg("Placed Hero: " + tower.baseId + "-" + tower.pathOneTier);
                     sprite = sprites[tower.baseId + "-" + tower.pathOneTier].portrait.guidRef;
                     previewimage.AddImage(new Info($"{tower.baseId}-{tower.pathOneTier}", (float) Math.Round(tower.position.x) * towermultiplierx, (float) Math.Round(tower.position.y) * towermultipliery, 200, 200, new Vector2(.5f, .5f)), sprite);
+                    continue;
                 }
-                else
+
+                if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) != null)
                 {
-                    if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) != null)
-                    {
-                        //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
-                        sprite = Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier).portrait.guidRef;
-                        previewimage.AddImage(new Info($"{tower.baseId}-{tower.pathOneTier}{tower.pathTwoTier}{tower.pathThreeTier}", (float) Math.Round(tower.position.x) * towermultiplierx, (float) Math.Round(tower.position.y) * towermultipliery, 200, 200, new Vector2(.5f, .5f)), sprite);
-                    }
-                    else if (Game.instance.model.GetTowerFromId(tower.baseId) != null)
-                    {
-                        //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId);
-                        sprite = Game.instance.model.GetTowerFromId(tower.baseId).portrait.guidRef;
-                        previewimage.AddImage(new Info($"{tower.baseId}-{tower.pathOneTier}{tower.pathTwoTier}{tower.pathThreeTier}", (float) Math.Round(tower.position.x) * towermultiplierx, (float) Math.Round(tower.position.y) * towermultipliery, 200, 200, new Vector2(.5f, .5f)), sprite);
-                    }
-                    else
-                    {
-                        MelonLogger.Msg("Errored Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
-                        previewimage.AddImage(new Info($"{tower.baseId}-{tower.pathOneTier}{tower.pathTwoTier}{tower.pathThreeTier}", (float) Math.Round(tower.position.x) * towermultiplierx, (float) Math.Round(tower.position.y) * towermultipliery, 300, 200, new Vector2(.5f, .5f)), sprite);
-                    }
+                    //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+                    sprite = Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier).portrait.guidRef;
+                    previewimage.AddImage(new Info($"{tower.baseId}-{tower.pathOneTier}{tower.pathTwoTier}{tower.pathThreeTier}", (float) Math.Round(tower.position.x) * towermultiplierx, (float) Math.Round(tower.position.y) * towermultipliery, 200, 200, new Vector2(.5f, .5f)), sprite);
+                    continue;
                 }
+
+                if (Game.instance.model.GetTowerFromId(tower.baseId) != null)
+                {
+                    //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId);
+                    sprite = Game.instance.model.GetTowerFromId(tower.baseId).portrait.guidRef;
+                    previewimage.AddImage(new Info($"{tower.baseId}-{tower.pathOneTier}{tower.pathTwoTier}{tower.pathThreeTier}", (float) Math.Round(tower.position.x) * towermultiplierx, (float) Math.Round(tower.position.y) * towermultipliery, 200, 200, new Vector2(.5f, .5f)), sprite);
+                    continue;
+                }
+
+                MelonLogger.Msg("Unable to find portrait for: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+                previewimage.AddImage(new Info($"{tower.baseId}-{tower.pathOneTier}{tower.pathTwoTier}{tower.pathThreeTier}", (float) Math.Round(tower.position.x) * towermultiplierx, (float) Math.Round(tower.position.y) * towermultipliery, 300, 200, new Vector2(.5f, .5f)), sprite);
+                continue;
             }
         }
 

@@ -39,10 +39,10 @@ public class SaveMenuPanel : ModHelperComponent
         {
             X = 185,
             Y = 0,
-            Width = 290,
-            Height = 290,
+            Width = 420,
+            Height = 320,
             Anchor = new Vector2(0, 0.5f)
-        }, ModContent.GetSpriteReference<Main>("ModsBtn").guidRef);
+        }, VanillaSprites.UISprite);
         var modname = panel.AddText(new Info("Name", 150f, 50f, 500, 150), "Name", SaveMenu.FontMedium);
         modname.Text.enableAutoSizing = true;
 
@@ -57,24 +57,31 @@ internal static class SaveMenuModExt
 {
     public static void SetupIcons(this SaveMenuPanel save, MapSaveDataModel map)
     {
-        try
+        foreach (var mapSetMap in GameData.Instance.mapSet.maps)
         {
-            foreach (var mapSetMap in GameData.Instance.mapSet.maps)
+            if (GameData._instance.mapSet.Maps.items.Any(x => x.id == map.mapName))
             {
-                if (mapSetMap.mapSprite != null && map.mapName == mapSetMap.id)
+                if (mapSetMap.mapSprite is not null && map.mapName == mapSetMap.id && mapSetMap.mapSprite.GUID is not null && mapSetMap.mapSprite.guidRef is not null && mapSetMap.mapSprite.guidRef != "" && mapSetMap.mapSprite.GUID != "" && mapSetMap.mapSprite.GetGUID() is not null && mapSetMap.mapSprite.GetGUID() != "")
                 {
-                    save.Icon.Image.SetSprite(mapSetMap.mapSprite);
-                    save.Icon.SetActive(true);
-                }
-                else if (!GameData._instance.mapSet.Maps.items.Any(x => x.id == map.mapName))
-                {
-                    save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("ModsBtn").guidRef);
-                    save.ModdedIcon.SetActive(true);
+                    try
+                    {
+                        save.Icon.Image.SetSprite(mapSetMap.mapSprite);   
+                        save.Icon.SetActive(true);
+                    }
+                    catch (Exception)
+                    {
+                        save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("UnknownMap").guidRef);
+                        save.ModdedIcon.SetActive(true);
+                        save.Icon.SetActive(false);
+                    }
                 }
             }
-        }
-        catch (NullReferenceException)
-        {
+            else
+            {
+                save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("UnknownMap").guidRef);
+                save.ModdedIcon.SetActive(true);
+                save.Icon.SetActive(false);
+            }
         }
     }
 
@@ -89,15 +96,15 @@ internal static class SaveMenuModExt
         var gameVersion = save.GameVersion;
         gameVersion.SetText(map.gameVersion);
 
-        if (int.Parse(map.gameVersion.Split('.')[0]) < profile.savedByGameVersion.Major || map.version < Assets.Scripts.Simulation.Utils.MapSaveLoader.LatestVersion)
+        if (int.Parse(map.gameVersion.Split('.')[0]) != profile.savedByGameVersion.Major || map.version != Assets.Scripts.Simulation.Utils.MapSaveLoader.LatestVersion)
         {
             gameVersion.Text.color = Color.red;
         }
-        else if (int.Parse(map.gameVersion.Split('.')[1]) < Main.profile.savedByGameVersion.Minor)
+        else if (map.gameVersion.Split('.')[1] != profile.savedByGameVersion.ToString().Split('.')[1])
         {
             gameVersion.Text.color = Color.yellow;
         }
-        else if (map.gameVersion == Main.profile.savedByGameVersion.Major + "." + Main.profile.savedByGameVersion.Minor)
+        else if (map.gameVersion == profile.savedByGameVersion.Major + "." + profile.savedByGameVersion.Minor)
         {
             gameVersion.Text.color = Color.green;
         }
@@ -108,27 +115,40 @@ internal static class SaveMenuModExt
             if (standardtowers.Contains(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) || nonstandardtowers.Contains(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier))
             {
                 //MelonLogger.Msg("Placed Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+                continue;
             }
-            else if (standardheroes.Contains(tower.baseId + "-" + tower.pathOneTier))
+
+            if (standardheroes.Contains(tower.baseId + "-" + tower.pathOneTier))
             {
                 //MelonLogger.Msg("Placed Hero: " + tower.baseId + "-" + tower.pathOneTier);
+                continue;
             }
-            else
+
+            if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) != null)
             {
-                if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) != null)
-                {
-                    //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
-                }
-                else
-                {
-                    iscompatible = false;
-                }
+                //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+                continue;
+            }
+
+            if (Game.instance.model.GetTowerFromId(tower.baseId) != null)
+            {
+                //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId);
+                continue;
+            }
+
+            if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) == null)
+            {
+                MelonLogger.Msg("Incompatible Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+                iscompatible = false;
+                break;
             }
         }
+
         if (save.GameVersion.Text.color == Color.green)
         {
             name.Text.color = Color.green;
         }
+
         if (save.GameVersion.Text.color == Color.yellow)
         {
             name.Text.color = Color.yellow;
@@ -138,21 +158,11 @@ internal static class SaveMenuModExt
         {
             name.Text.color = Color.red;
         }
+
         save.ModdedIcon.SetActive(false);
         save.Icon.SetActive(false);
-        foreach (var mapSetMap in GameData.Instance.mapSet.maps)
-        {
-            if (map.mapName == mapSetMap.id)
-            {
-                save.Icon.Image.SetSprite(mapSetMap.mapSprite);
-                save.Icon.SetActive(true);
-            }
-            else if (!GameData._instance.mapSet.Maps.items.Any(x => x.id == map.mapName))
-            {
-                save.ModdedIcon.Image.SetSprite(ModContent.GetSpriteReference<Main>("ModsBtn").guidRef);
-                save.ModdedIcon.SetActive(true);
-            }
-        }
+        SetupIcons(save, map);
+
         save.SetActive(true);
     }
 }

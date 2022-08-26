@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Models;
 using Assets.Scripts.Models.Towers;
-using Assets.Scripts.Unity;
 using UnhollowerRuntimeLib;
 
 public class Main : BloonsTD6Mod
@@ -43,8 +42,10 @@ public class Main : BloonsTD6Mod
                 //MelonLogger.Msg("Saved Hero: " + tower.baseId + "-" + tower.tiers[0]);
                 standardheroes.Add(tower.baseId + "-" + tower.tiers[0]);
                 sprites[tower.baseId + "-" + tower.tiers[0]] = tower;
+                continue;
             }
-            else if (!tower.isGeraldoItem && !tower.isSubTower && !tower.IsHero() && !standardheroes.Contains(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]))
+
+            if (!tower.isGeraldoItem && !tower.isSubTower && !tower.IsHero() && !standardheroes.Contains(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]))
             {
                 //MelonLogger.Msg("Saved Tower: " + tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]);
                 standardtowers.Add(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]);

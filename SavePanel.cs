@@ -18,7 +18,7 @@ public static class SavePanel
             Anchor = new Vector2(1, 0), Pivot = new Vector2(1, 0)
         });
         var button = panel.AddButton(new Info("SavePanelButton", -2325, 440, 900, 280, new Vector2(1, 0), new Vector2(0.5f, 0)), VanillaSprites.GreenBtnLong, new Action(opensavemenu));
-        button.AddImage(new Info("SavePanelImage", 140, 45, 200, 200, new Vector2(0, 0), new Vector2(0.5f, 0)), VanillaSprites.SaveGameIcon);
+        button.AddButton(new Info("SavePanelImage", 140, 45, 200, 200, new Vector2(0, 0), new Vector2(0.5f, 0)), VanillaSprites.SaveGameIcon, new Action(opensavemenu));
         button.AddText(new Info("Text", 50, 0, 1000, 200), "Saves List", 90f);
     }
 
