@@ -24,7 +24,7 @@ public static class InfoButton
             };
             if (description.Equals("Error"))
             {
-                button = ModHelperButton.Create(new Info(name + "Button", width: 562, height: 200), VanillaSprites.RedBtnLong, null);
+                button = ModHelperButton.Create(new Info(name + "Button", 562, 200), VanillaSprites.RedBtnLong, null);
                 button.AddText(new Info("Text", 0, 0, 500, 100), name, 60f);
                 return button;
             }
@@ -32,12 +32,12 @@ public static class InfoButton
 
         if (sprite == null)
         {
-            button = ModHelperButton.Create(new Info(name + "Button", width: 562, height: 200), VanillaSprites.BlueBtnLong, onclick);
+            button = ModHelperButton.Create(new Info(name + "Button", 562, 200), VanillaSprites.BlueBtnLong, onclick);
             button.AddText(new Info(name + "Button", 0, 0, 500, 100), name, 60f);
             return button;
         }
 
-        button = ModHelperButton.Create(new Info(name + "Button", width: 562, height: 200), sprite, onclick);
+        button = ModHelperButton.Create(new Info(name + "Button", 562, 200), sprite, onclick);
         button.AddText(new Info(name + "Button", 0, 0, 500, 100), name, 60f);
         return button;
     }

@@ -11,7 +11,8 @@ A green map name means that it should be entirely safe to play on.
 A yellow name means that the save has a different minor update than the game.
 
 A red name means that either there are incompatible (modded towers when the mod is not currently loaded), the save
-has a different major update than the game, or the save file version is out of date.
+has a different major update than the game, the map the save is for is not loaded, or the save file version is out of
+date.
 
 Images were made by me using [GIMP](http://www.gimp.org/) and [pixilart.com](https://pixilart.com/).
 

@@ -7,7 +7,7 @@
         <AssemblyName>BTD6SaveMenu</AssemblyName>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
         <Optimize>false</Optimize>
         <DebugType>embedded</DebugType>
     </PropertyGroup>
@@ -21,5 +21,13 @@
     <ItemGroup>
         <Compile Remove="SaveButton.cs"/>
     </ItemGroup>
+    <ItemGroup>
+        <Reference Include="0Harmony">
+            <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BloonsTD6\MelonLoader\net35\0Harmony.dll</HintPath>
+        </Reference>
+        <Reference Include="MelonLoader">
+            <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BloonsTD6\MelonLoader\net35\MelonLoader.dll</HintPath>
+        </Reference>
+    </ItemGroup> 
     <Import Project="..\btd6.targets"/>
 </Project>
