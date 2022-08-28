@@ -106,77 +106,89 @@ internal static class SaveMenuModExt
         var iscompatible = true;
         foreach (var tower in map.placedTowers.Where(tower => tower is not null))
         {
-            
-            if (Game.instance.model.GetTowerFromId(tower.baseId) != null)
-                //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId);
+            if (standardheroes.Contains(tower.baseId + "-" + tower.pathOneTier))
                 continue;
-            try
-            {
-                if (standardheroes.Contains(tower.baseId + "-" + tower.pathOneTier) || standardtowers.Contains(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) || nonstandardtowers.Contains(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier))
-                    //MelonLogger.Msg("Placed Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+            if (nonstandardtowers.Contains(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier))
+                continue;
+            if (standardtowers.Contains(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier))
+                if (checkucrosspathingcompat() == false)
+                {
+                    iscompatible = false;
                     continue;
-            }
-            catch
-            {
-            }
+                }
+                else
+                {
+                    continue;
+                }
 
-            try
-            {
-                if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) != null)
-                    //MelonLogger.Msg("Placed Modded Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+            if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) != null && !Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier).IsHero())
+                if (checkucrosspathingcompat() == false)
+                {
+                    iscompatible = false;
                     continue;
-            }
-            catch
+                }
+                else
+                {
+                    continue;
+                }
+
+            
+            if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) == null)
             {
+                //MelonLogger.Msg("Hero ID: "+tower.heroId);
+                if (tower.heroId != "")
+                    MelonLogger.Warning("Incompatible Hero: " + tower.baseId + "-" + tower.pathOneTier +$" in {save.Name.Text.text}");
+                else 
+                    MelonLogger.Warning("Incompatible Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier + $" in {save.Name.Text.text}");
+                iscompatible = false;
+                continue;
             }
 
             bool IsValidCrosspath(int[] tiers)
             {
                 var sorted = tiers.OrderByDescending(num => num).ToArray();
+                if (sorted[0] == 6 && sorted[1] == 0 && sorted[2] == 0)
+                    return true;
                 return sorted[0] <= 5 && sorted[1] <= 2 && sorted[2] == 0;
             }
+
             bool checkucrosspathingcompat()
-            {        
+            {
                 int[] tiers2 = new int[2];
-                //MelonLogger.Msg("Crosspath Has Mod: " + ModContent.HasMod("UltimateCrosspathing"));
                 if (!ModContent.HasMod("UltimateCrosspathing"))
-                    for (var i = 0; i <= tower.pathOneTier; i++) for (var j = 0; j <= tower.pathTwoTier; j++) for (var k = 0; k <= tower.pathThreeTier; k++)
+                    for (var i = 0; i <= tower.pathOneTier; i++)
+                    for (var j = 0; j <= tower.pathTwoTier; j++)
+                    for (var k = 0; k <= tower.pathThreeTier; k++)
                     {
                         tiers2 = new[] {i, j, k};
                         if (!IsValidCrosspath(tiers2))
                         {
-                            MelonLogger.Msg("Invalid Crosspath: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+                            MelonLogger.Warning("Invalid Crosspath for: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier + $" in {save.Name.Text.text}");
                             return false;
                         }
                     }
-                else 
+                else
                 {
-                    for (var i = 0; i <= tower.pathOneTier; i++) for (var j = 0; j <= tower.pathTwoTier; j++) for (var k = 0; k <= tower.pathThreeTier; k++)
+                    for (var i = 0; i <= tower.pathOneTier; i++)
+                    for (var j = 0; j <= tower.pathTwoTier; j++)
+                    for (var k = 0; k <= tower.pathThreeTier; k++)
                     {
                         tiers2 = new[] {i, j, k};
                         //MelonLogger.Msg("Has Crosspathing: "+ string.Join(". ", tiers2)+"\\ "+ tiers2.Sum()+", "+ ModContent.GetMod("UltimateCrosspathing").ModSettings["MaxTiers"].GetValue().ToString());
-                        if (tiers2.Sum()< int.Parse(ModContent.GetMod("UltimateCrosspathing").ModSettings["MaxTiers"].GetValue().ToString()))
+                        if (tiers2.Sum() > int.Parse(ModContent.GetMod("UltimateCrosspathing").ModSettings["MaxTiers"].GetValue().ToString()) && !IsValidCrosspath(tiers2))
                         {
-                            MelonLogger.Msg("Invalid Crosspath because of the MaxTiers ModSetting: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
+                            MelonLogger.Warning("Invalid Crosspath because of the MaxTiers setting in UltimateCrosspathing for: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier + $" in {save.Name.Text.text}");
                             return false;
                         }
                     }
                 }
+
                 return true;
             }
 
             if (checkucrosspathingcompat() == false)
             {
                 iscompatible = false;
-                break;
-            }
-
-
-            if (Game.instance.model.GetTowerFromId(tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier) == null)
-            {
-                MelonLogger.Msg("Incompatible Tower: " + tower.baseId + "-" + tower.pathOneTier + tower.pathTwoTier + tower.pathThreeTier);
-                iscompatible = false;
-                break;
             }
         }
 

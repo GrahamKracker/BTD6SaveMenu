@@ -51,6 +51,11 @@ public class Main : BloonsTD6Mod
                 standardtowers.Add(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]);
                 sprites[tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]] = tower;
             }
+            if ((tower.isSubTower || tower.isGeraldoItem) && !tower.IsHero())
+            {
+                nonstandardtowers.Add(tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]);
+                sprites[tower.baseId + "-" + tower.tiers[0] + tower.tiers[1] + tower.tiers[2]] = tower;
+            }
         }
 
         foreach (var tower in model.powers.Select(power => power.tower))

@@ -1,3 +1,3 @@
-Support for Ultimate Crosspathing
-Made unloaded maps have red names
-cleaned up code and fixed some null reference exceptions
+already found like 4 bugs for Ultimate Crosspathing support/fixed support for hopefully the last time
+made the incompatible tower logs as warnings to make them stand out
+made even more support for paragons
