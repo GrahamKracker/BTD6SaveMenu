@@ -3,7 +3,7 @@
         <TargetFramework>net48</TargetFramework>
         <RootNamespace>BTD6SaveMenu</RootNamespace>
         <Configurations>Debug;Release</Configurations>
-        <Nullable>warnings</Nullable>
+        <Nullable>enable</Nullable>
         <AssemblyName>BTD6SaveMenu</AssemblyName>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
@@ -16,12 +16,9 @@
         <DebugType>none</DebugType>
     </PropertyGroup>
     <ItemGroup>
-        <None Include=".github\workflows\build.yml"/>
+        <None Include=".github\workflows\build.yml" />
     </ItemGroup>
-    <ItemGroup>
-        <Compile Remove="SaveButton.cs"/>
-    </ItemGroup>
-    <!--
+    
     <ItemGroup>
         <Reference Include="0Harmony">
             <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BloonsTD6\MelonLoader\net35\0Harmony.dll</HintPath>
@@ -29,6 +26,6 @@
         <Reference Include="MelonLoader">
             <HintPath>C:\Program Files (x86)\Steam\steamapps\common\BloonsTD6\MelonLoader\net35\MelonLoader.dll</HintPath>
         </Reference>
-    </ItemGroup> -->
-    <Import Project="..\btd6.targets"/>
+    </ItemGroup>
+    <Import Project="..\btd6.targets" />
 </Project>

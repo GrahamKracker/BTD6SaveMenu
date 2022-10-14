@@ -282,15 +282,15 @@ public class SaveMenu : ModGameMenu<ExtraSettingsScreen>
             else
                 description.Add("Currently not in Freeplay  ");
 
-            description.Add("Abilities Used: " + mapSave.abilitiesActivated);
+            //description.Add("Abilities Used: " + mapSave.abilitiesActivated);
             foreach (var loan in mapSave.loans)
             {
                 description.Add("Debt: " + loan.amount);
             }
 
-            description.Add("Number of Towers Placed: " + mapSave.towersPlaced);
-            description.Add("Number of Powers Used: " + mapSave.powersActivated);
-            description.Add("Number of InstaMonkeys: " + mapSave.instaMonkeysUsed);
+            description.Add("Number of Towers Placed: " + mapSave.placedTowers.Count);
+            description.Add("Number of Powers Used: " + mapSave.powerPlaceHistory.Count);
+            //description.Add("Number of InstaMonkeys: " + mapSave.instaMonkeysUsed);
             description.Add("Cash Spent: " + string.Format("{0:#,###0}", mapSave.cashSpent));
             return finalizeDescription(description);
         }
